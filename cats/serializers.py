@@ -1,6 +1,8 @@
 import datetime as dt
 
 from rest_framework import serializers
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from .models import CHOISE, Achievement, AchievementCat, Cat, Owner
 
@@ -11,6 +13,14 @@ class AchievementSerializator(serializers.ModelSerializer):
     class Meta:
         model = Achievement
         fields = ('id', 'name')
+
+
+class CatListSerializer(serializers.ModelSerializer):
+    color = serializers.ChoiceField(choices=CHOISE)
+
+    class Meta:
+        model = Cat
+        fields = ('id', 'name', 'color')
 
 
 class CatSerializer(serializers.ModelSerializer):
@@ -47,6 +57,12 @@ class CatSerializer(serializers.ModelSerializer):
 
     def get_age(self, obj):
         return dt.datetime.now().year - obj.birth_year
+
+    @action(detail=False, url_path='recent-white-cats')
+    def recent_white_cats(self, request):
+        cats = Cat.objects.filter(colore='White')[:5]
+        serializer = self.get_serializer(cats, many=True)
+        return Response(serializer.data)
 
 
 class OwnerSerializer(serializers.ModelSerializer):
